@@ -1,0 +1,96 @@
+version: "3"
+secrets:
+  s3host: { file: ./.secret/.s3host }
+  s3port: { file: ./.secret/.s3port }
+  s3region: { file: ./.secret/.s3region }
+  s3bucket: { file: ./.secret/.s3bucket }
+  s3access: { file: ./.secret/.s3access }
+  s3secret: { file: ./.secret/.s3secret }
+networks:
+  minio_default: { external: true }
+services:
+  # --------------------------------------------------------------------------------------------------------------------
+  tempo-base:
+    container_name: tempo-base
+    image: grafana/tempo:latest
+    labels:
+      kompose.service.type: nodeport
+      kompose.volume.type: configMap
+    networks: [minio_default]
+    ports: ["3200"]
+    secrets:
+      - { source: s3host, target: /run/secrets/s3host/s3host }
+      - { source: s3port, target: /run/secrets/s3port/s3port }
+      - { source: s3region, target: /run/secrets/s3region/s3region }
+      - { source: s3bucket, target: /run/secrets/s3bucket/s3bucket }
+      - { source: s3access, target: /run/secrets/s3access/s3access }
+      - { source: s3secret, target: /run/secrets/s3secret/s3secret }
+    entrypoint: [sh]
+    volumes:
+      - ./docker-entry.sh:/entrypoint:ro
+      - ./etc.config.yml:/etc/config/tempo.yml:ro
+      - ./../.volume/data:/data
+      - ./../.volume/tmp:/tmp
+      - ./../.volume/log:/var/log
+    environment:
+      - TZ=Asia/Jakarta
+  # --------------------------------------------------------------------------------------------------------------------
+  tempo-distributor:
+    container_name: tempo-distributor
+    extends: { service: tempo-base }
+    entrypoint: [/entrypoint, distributor]
+    depends_on: [tempo-ingester-0, tempo-ingester-1, tempo-ingester-2]
+  # --------------------------------------------------------------------------------------------------------------------
+  tempo-ingester-0:
+    container_name: tempo-ingester-0
+    extends: { service: tempo-base }
+    entrypoint: [/entrypoint, ingester, "-0"]
+    depends_on: []
+  # --------------------------------------------------------------------------------------------------------------------
+  tempo-ingester-1:
+    container_name: tempo-ingester-1
+    extends: { service: tempo-base }
+    entrypoint: [/entrypoint, ingester, "-1"]
+    depends_on: []
+  # --------------------------------------------------------------------------------------------------------------------
+  tempo-ingester-2:
+    container_name: tempo-ingester-2
+    extends: { service: tempo-base }
+    entrypoint: [/entrypoint, ingester, "-2"]
+    depends_on: []
+  # --------------------------------------------------------------------------------------------------------------------
+  tempo-query-frontend:
+    container_name: tempo-query-frontend
+    extends: { service: tempo-base }
+    entrypoint: [/entrypoint, query-frontend]
+    depends_on: []
+  # --------------------------------------------------------------------------------------------------------------------
+  tempo-querier-0:
+    container_name: tempo-querier-0
+    extends: { service: tempo-base }
+    entrypoint: [/entrypoint, querier, "-0"]
+    depends_on: [tempo-query-frontend]
+  # --------------------------------------------------------------------------------------------------------------------
+  tempo-querier-1:
+    container_name: tempo-querier-1
+    extends: { service: tempo-base }
+    entrypoint: [/entrypoint, querier, "-1"]
+    depends_on: [tempo-query-frontend]
+  # --------------------------------------------------------------------------------------------------------------------
+  tempo-querier-2:
+    container_name: tempo-querier-2
+    extends: { service: tempo-base }
+    entrypoint: [/entrypoint, querier, "-2"]
+    depends_on: [tempo-query-frontend]
+  # --------------------------------------------------------------------------------------------------------------------
+  tempo-compactor:
+    container_name: tempo-compactor
+    extends: { service: tempo-base }
+    entrypoint: [/entrypoint, compactor]
+    depends_on: []
+  # --------------------------------------------------------------------------------------------------------------------
+  tempo-metrics-generator:
+    container_name: tempo-metrics-generator
+    extends: { service: tempo-base }
+    entrypoint: [/entrypoint, metrics-generator]
+    depends_on: []

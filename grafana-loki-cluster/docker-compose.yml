@@ -1,0 +1,110 @@
+version: "3"
+secrets:
+  s3host: { file: ./.secret/.s3host }
+  s3port: { file: ./.secret/.s3port }
+  s3region: { file: ./.secret/.s3region }
+  s3bucket: { file: ./.secret/.s3bucket }
+  s3access: { file: ./.secret/.s3access }
+  s3secret: { file: ./.secret/.s3secret }
+networks:
+  minio_default: { external: true }
+services:
+  # --------------------------------------------------------------------------------------------------------------------
+  loki-base:
+    container_name: loki-base
+    image: grafana/loki:latest
+    labels:
+      kompose.service.type: nodeport
+      kompose.volume.type: configMap
+    user: root:root
+    networks: [minio_default]
+    ports: ["3100"]
+    secrets:
+      - { source: s3host, target: /run/secrets/s3host/s3host }
+      - { source: s3port, target: /run/secrets/s3port/s3port }
+      - { source: s3region, target: /run/secrets/s3region/s3region }
+      - { source: s3bucket, target: /run/secrets/s3bucket/s3bucket }
+      - { source: s3access, target: /run/secrets/s3access/s3access }
+      - { source: s3secret, target: /run/secrets/s3secret/s3secret }
+    entrypoint: [sh]
+    volumes:
+      - ./docker-entry.sh:/entrypoint:ro
+      - ./etc.config.yml:/etc/config/loki.yml:ro
+      - ./../.volume/data:/data
+      - ./../.volume/tmp:/tmp
+      - ./../.volume/log:/var/log
+    environment:
+      - TZ=Asia/Jakarta
+  # --------------------------------------------------------------------------------------------------------------------
+  loki-distributor:
+    container_name: loki-distributor
+    extends: { service: loki-base }
+    entrypoint: [/entrypoint, distributor]
+    depends_on: [loki-ingester-0, loki-ingester-1, loki-ingester-2]
+  # --------------------------------------------------------------------------------------------------------------------
+  loki-ingester-0:
+    container_name: loki-ingester-0
+    extends: { service: loki-base }
+    entrypoint: [/entrypoint, ingester, "-0"]
+    depends_on: []
+  # --------------------------------------------------------------------------------------------------------------------
+  loki-ingester-1:
+    container_name: loki-ingester-1
+    extends: { service: loki-base }
+    entrypoint: [/entrypoint, ingester, "-1"]
+    depends_on: []
+  # --------------------------------------------------------------------------------------------------------------------
+  loki-ingester-2:
+    container_name: loki-ingester-2
+    extends: { service: loki-base }
+    entrypoint: [/entrypoint, ingester, "-2"]
+    depends_on: []
+  # --------------------------------------------------------------------------------------------------------------------
+  loki-query-scheduler:
+    container_name: loki-query-scheduler
+    extends: { service: loki-base }
+    entrypoint: [/entrypoint, query-scheduler]
+    depends_on: []
+  # --------------------------------------------------------------------------------------------------------------------
+  loki-query-frontend:
+    container_name: loki-query-frontend
+    extends: { service: loki-base }
+    entrypoint: [/entrypoint, query-frontend]
+    depends_on: []
+  # --------------------------------------------------------------------------------------------------------------------
+  loki-querier-0:
+    container_name: loki-querier-0
+    extends: { service: loki-base }
+    entrypoint: [/entrypoint, querier, "-0"]
+    depends_on: [loki-query-frontend]
+  # --------------------------------------------------------------------------------------------------------------------
+  loki-querier-1:
+    container_name: loki-querier-1
+    extends: { service: loki-base }
+    entrypoint: [/entrypoint, querier, "-1"]
+    depends_on: [loki-query-frontend]
+  # --------------------------------------------------------------------------------------------------------------------
+  loki-querier-2:
+    container_name: loki-querier-2
+    extends: { service: loki-base }
+    entrypoint: [/entrypoint, querier, "-2"]
+    depends_on: [loki-query-frontend]
+  # --------------------------------------------------------------------------------------------------------------------
+  loki-ruler:
+    container_name: loki-ruler
+    extends: { service: loki-base }
+    entrypoint: [/entrypoint, ruler]
+    depends_on: []
+  # --------------------------------------------------------------------------------------------------------------------
+  loki-compactor:
+    container_name: loki-compactor
+    extends: { service: loki-base }
+    entrypoint: [/entrypoint, compactor]
+    depends_on: []
+  # --------------------------------------------------------------------------------------------------------------------
+  loki-index-gateway:
+    container_name: loki-index-gateway
+    extends: { service: loki-base }
+    entrypoint: [/entrypoint, index-gateway]
+    depends_on: []
+  # --------------------------------------------------------------------------------------------------------------------

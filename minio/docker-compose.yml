@@ -1,0 +1,47 @@
+version: "3"
+secrets:
+  uname: { file: ./.secret/.uname }
+  paswd: { file: ./.secret/.paswd }
+  loki-bucket: { file: ./../grafana-loki-cluster/.secret/.s3bucket }
+  loki-access: { file: ./../grafana-loki-cluster/.secret/.s3access }
+  loki-secret: { file: ./../grafana-loki-cluster/.secret/.s3secret }
+  tempo-bucket: { file: ./../grafana-tempo-cluster/.secret/.s3bucket }
+  tempo-access: { file: ./../grafana-tempo-cluster/.secret/.s3access }
+  tempo-secret: { file: ./../grafana-tempo-cluster/.secret/.s3secret }
+  mimir-bucket: { file: ./../grafana-mimir-cluster/.secret/.s3bucket }
+  mimir-access: { file: ./../grafana-mimir-cluster/.secret/.s3access }
+  mimir-secret: { file: ./../grafana-mimir-cluster/.secret/.s3secret }
+services:
+  minio:
+    container_name: minio
+    image: minio/minio:latest
+    labels:
+      kompose.service.type: nodeport
+      kompose.volume.type: configMap
+    restart: no
+    ports: [9000:9000, 9001:9001]
+    secrets:
+      - { source: uname, target: /run/secrets/uname/uname }
+      - { source: paswd, target: /run/secrets/paswd/paswd }
+      - { source: loki-bucket, target: /run/secrets/loki-bucket/loki-bucket }
+      - { source: loki-access, target: /run/secrets/loki-access/loki-access }
+      - { source: loki-secret, target: /run/secrets/loki-secret/loki-secret }
+      - { source: tempo-bucket, target: /run/secrets/tempo-bucket/tempo-bucket }
+      - { source: tempo-access, target: /run/secrets/tempo-access/tempo-access }
+      - { source: tempo-secret, target: /run/secrets/tempo-secret/tempo-secret }
+      - { source: mimir-bucket, target: /run/secrets/mimir-bucket/mimir-bucket }
+      - { source: mimir-access, target: /run/secrets/mimir-access/mimir-access }
+      - { source: mimir-secret, target: /run/secrets/mimir-secret/mimir-secret }
+    environment:
+      - TZ=Asia/Jakarta
+      - MINIO_ROOT_USER_FILE=/run/secrets/uname/uname
+      - MINIO_ROOT_PASSWORD_FILE=/run/secrets/paswd/paswd
+      - MINIO_PROMETHEUS_AUTH_TYPE=public
+      - MINIO_STORAGE_CLASS_STANDARD=EC:2
+      - MINIO_BROWSER=on
+    entrypoint: ["/entrypoint"]
+    volumes:
+      - ./docker-entry.sh:/entrypoint
+      - ./../.volume/data:/data
+      - ./../.volume/tmp:/tmp
+      - ./../.volume/log:/var/log

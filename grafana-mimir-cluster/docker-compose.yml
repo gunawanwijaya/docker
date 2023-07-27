@@ -1,0 +1,109 @@
+version: "3"
+secrets:
+  s3host: { file: ./.secret/.s3host }
+  s3port: { file: ./.secret/.s3port }
+  s3region: { file: ./.secret/.s3region }
+  s3bucket: { file: ./.secret/.s3bucket }
+  s3access: { file: ./.secret/.s3access }
+  s3secret: { file: ./.secret/.s3secret }
+networks:
+  minio_default: { external: true }
+services:
+  # --------------------------------------------------------------------------------------------------------------------
+  mimir-base:
+    container_name: mimir-base
+    image: grafana/mimir:latest
+    labels:
+      kompose.service.type: nodeport
+      kompose.volume.type: configMap
+    networks: [minio_default]
+    ports: ["3300"]
+    secrets:
+      - { source: s3host, target: /run/secrets/s3host/s3host }
+      - { source: s3port, target: /run/secrets/s3port/s3port }
+      - { source: s3region, target: /run/secrets/s3region/s3region }
+      - { source: s3bucket, target: /run/secrets/s3bucket/s3bucket }
+      - { source: s3access, target: /run/secrets/s3access/s3access }
+      - { source: s3secret, target: /run/secrets/s3secret/s3secret }
+    entrypoint: [sh]
+    volumes:
+      - ./docker-entry.sh:/entrypoint:ro
+      - ./etc.config.yml:/etc/config/mimir.yml:ro
+      - ./../.volume/data:/data
+      - ./../.volume/tmp:/tmp
+      - ./../.volume/log:/var/log
+    environment:
+      - TZ=Asia/Jakarta
+  # --------------------------------------------------------------------------------------------------------------------
+  mimir-distributor:
+    container_name: mimir-distributor
+    extends: { service: mimir-base }
+    entrypoint: [/entrypoint, distributor]
+    depends_on: [mimir-ingester-0, mimir-ingester-1, mimir-ingester-2]
+  # --------------------------------------------------------------------------------------------------------------------
+  mimir-ingester-0:
+    container_name: mimir-ingester-0
+    extends: { service: mimir-base }
+    entrypoint: [/entrypoint, ingester, "-0"]
+    depends_on: []
+  # --------------------------------------------------------------------------------------------------------------------
+  mimir-ingester-1:
+    container_name: mimir-ingester-1
+    extends: { service: mimir-base }
+    entrypoint: [/entrypoint, ingester, "-1"]
+    depends_on: []
+  # --------------------------------------------------------------------------------------------------------------------
+  mimir-ingester-2:
+    container_name: mimir-ingester-2
+    extends: { service: mimir-base }
+    entrypoint: [/entrypoint, ingester, "-2"]
+    depends_on: []
+  # --------------------------------------------------------------------------------------------------------------------
+  mimir-query-scheduler:
+    container_name: mimir-query-scheduler
+    extends: { service: mimir-base }
+    entrypoint: [/entrypoint, query-scheduler]
+    depends_on: []
+  # --------------------------------------------------------------------------------------------------------------------
+  mimir-query-frontend:
+    container_name: mimir-query-frontend
+    extends: { service: mimir-base }
+    entrypoint: [/entrypoint, query-frontend]
+    depends_on: []
+  # --------------------------------------------------------------------------------------------------------------------
+  mimir-querier-0:
+    container_name: mimir-querier-0
+    extends: { service: mimir-base }
+    entrypoint: [/entrypoint, querier, "-0"]
+    depends_on: [mimir-query-frontend]
+  # --------------------------------------------------------------------------------------------------------------------
+  mimir-querier-1:
+    container_name: mimir-querier-1
+    extends: { service: mimir-base }
+    entrypoint: [/entrypoint, querier, "-1"]
+    depends_on: [mimir-query-frontend]
+  # --------------------------------------------------------------------------------------------------------------------
+  mimir-querier-2:
+    container_name: mimir-querier-2
+    extends: { service: mimir-base }
+    entrypoint: [/entrypoint, querier, "-2"]
+    depends_on: [mimir-query-frontend]
+  # --------------------------------------------------------------------------------------------------------------------
+  mimir-ruler:
+    container_name: mimir-ruler
+    extends: { service: mimir-base }
+    entrypoint: [/entrypoint, ruler]
+    depends_on: []
+  # --------------------------------------------------------------------------------------------------------------------
+  mimir-compactor:
+    container_name: mimir-compactor
+    extends: { service: mimir-base }
+    entrypoint: [/entrypoint, compactor]
+    depends_on: []
+  # --------------------------------------------------------------------------------------------------------------------
+  mimir-store-gateway:
+    container_name: mimir-store-gateway
+    extends: { service: mimir-base }
+    entrypoint: [/entrypoint, store-gateway]
+    depends_on: []
+  # --------------------------------------------------------------------------------------------------------------------
