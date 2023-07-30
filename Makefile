@@ -28,3 +28,9 @@ compose-mimir-cluster:
 		down --remove-orphans --volumes;' EXIT;\
 		docker compose -f ./grafana-mimir-cluster/docker-compose.yml \
 		up --remove-orphans --build;";
+compose-postgres-cluster:
+	@bash -c "trap '\
+		docker compose -f ./postgres-cluster/docker-compose.yml \
+		down --remove-orphans --volumes;' EXIT;\
+		docker compose -f ./postgres-cluster/docker-compose.yml \
+		up --remove-orphans --build;";
