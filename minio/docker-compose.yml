@@ -1,4 +1,6 @@
 version: "3"
+networks:
+  bridge: { name: net }
 secrets:
   uname: { file: ./.secret/.uname }
   paswd: { file: ./.secret/.paswd }
@@ -19,6 +21,7 @@ services:
       kompose.service.type: nodeport
       kompose.volume.type: configMap
     restart: no
+    networks: [bridge]
     ports: [9000:9000, 9001:9001]
     secrets:
       - { source: uname, target: /run/secrets/uname/uname }

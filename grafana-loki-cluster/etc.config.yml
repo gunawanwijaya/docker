@@ -66,7 +66,7 @@ query_range:
     cache:
       enable_fifocache : false
       embedded_cache:
-        enabled: true
+        enabled: false
 # ----------------------------------------------------------------------------------------------------------------------
 # https://grafana.com/docs/loki/latest/configuration/#ruler
 # 
@@ -101,10 +101,50 @@ ingester:
   lifecycler:
     ring:
       kvstore:
-        store: memberlist
+        store: memberlist # consul, etcd, inmemory, memberlist, multi.
+      heartbeat_timeout: 1m
+      replication_factor: 3
+      zone_awareness_enabled: false
+      excluded_zones: ""
+    num_tokens: 128
+    heartbeat_period: 5s
+    heartbeat_timeout: 1m
+    observe_period: 0s
+    join_after: 0s
+    min_ready_duration: 15s
+    # interface_names: list of [<private network interfaces>]
+    final_sleep: 0s
+    tokens_file_path: ""
+    availability_zone: ""
+    unregister_on_shutdown: true
+    readiness_check_ring_health: true
+    address: ""
+    port: 0
+    id: "<hostname>"
+  max_transfer_retries: 0
+  concurrent_flushes: 32
+  flush_check_period: 30s
+  flush_op_timeout: 10m
+  chunk_retain_period: 0s
+  chunk_idle_period: 30m
+  chunk_block_size: 262144
+  chunk_target_size: 1572864
+  chunk_encoding: "gzip"
+  max_chunk_age: 2h
+  autoforget_unhealthy: false
+  sync_period: 0s
+  sync_min_utilization: 0
+  max_returned_stream_errors: 10
+  query_store_max_look_back_period: 0s
   wal:
     enabled: true
-  #   dir: ingester-wal
+    dir: "/tmp/loki/wal"
+    checkpoint_duration: 5m
+    flush_on_shutdown: false
+    replay_memory_ceiling: 4GB
+  index_shards: 32
+  max_dropped_streams: 10
+
 # ----------------------------------------------------------------------------------------------------------------------
 # https://grafana.com/docs/loki/latest/configuration/#index_gateway
 # 
@@ -144,7 +184,7 @@ storage_config:
   index_queries_cache_config:
     enable_fifocache : false
     embedded_cache:
-      enabled: true
+      enabled: false
 # ----------------------------------------------------------------------------------------------------------------------
 # https://grafana.com/docs/loki/latest/configuration/#chunk_store_config
 # 
@@ -154,11 +194,11 @@ chunk_store_config:
   chunk_cache_config:
     enable_fifocache : false
     embedded_cache:
-      enabled: true
+      enabled: false
   write_dedupe_cache_config:
     enable_fifocache : false
     embedded_cache:
-      enabled: true
+      enabled: false
   cache_lookups_older_than: 0s
   max_look_back_period: 0s
 # ----------------------------------------------------------------------------------------------------------------------

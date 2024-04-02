@@ -1,0 +1,26 @@
+version: "3"
+networks:
+  bridge: { external: true, name: net }
+services:
+  # --------------------------------------------------------------------------------------------------------------------
+  otelcol:
+    container_name: otelcol
+    image: otel/opentelemetry-collector-contrib
+    labels:
+      kompose.service.type: nodeport
+      kompose.volume.type: configMap
+    networks: [bridge]
+    ports:
+    - 1888:1888 # pprof extension
+    - 8888:8888 # Prometheus metrics exposed by the Collector
+    - 8889:8889 # Prometheus exporter metrics
+    - 13133:13133 # health_check extension
+    - 4317:4317 # OTLP gRPC receiver
+    - 4318:4318 # OTLP http receiver
+    - 55679:55679 # zpages extension
+    command: --config=/etc/config/otelcol.yml
+    volumes:
+      - ./etc.config.yml:/etc/config/otelcol.yml:ro
+      - ./../.volume/log:/var/log
+    environment:
+      - TZ=Asia/Jakarta

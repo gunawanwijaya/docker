@@ -9,28 +9,40 @@ compose-minio:
 		docker compose -f ./minio/docker-compose.yml \
 		down --remove-orphans --volumes;' EXIT;\
 		docker compose -f ./minio/docker-compose.yml \
-		up --remove-orphans --build;";
+		up --remove-orphans --build --force-recreate;";
 compose-loki-cluster:
 	@bash -c "trap '\
 		docker compose -f ./grafana-loki-cluster/docker-compose.yml \
 		down --remove-orphans --volumes;' EXIT;\
 		docker compose -f ./grafana-loki-cluster/docker-compose.yml \
-		up --remove-orphans --build;";
+		up --remove-orphans --build --force-recreate;";
 compose-tempo-cluster:
 	@bash -c "trap '\
 		docker compose -f ./grafana-tempo-cluster/docker-compose.yml \
 		down --remove-orphans --volumes;' EXIT;\
 		docker compose -f ./grafana-tempo-cluster/docker-compose.yml \
-		up --remove-orphans --build;";
+		up --remove-orphans --build --force-recreate;";
 compose-mimir-cluster:
 	@bash -c "trap '\
 		docker compose -f ./grafana-mimir-cluster/docker-compose.yml \
 		down --remove-orphans --volumes;' EXIT;\
 		docker compose -f ./grafana-mimir-cluster/docker-compose.yml \
-		up --remove-orphans --build;";
+		up --remove-orphans --build --force-recreate;";
+compose-grafana-dashboard:
+	@bash -c "trap '\
+		docker compose -f ./grafana-dashboard/docker-compose.yml \
+		down --remove-orphans --volumes;' EXIT;\
+		docker compose -f ./grafana-dashboard/docker-compose.yml \
+		up --remove-orphans --build --force-recreate;";
+compose-otel-collector:
+	@bash -c "trap '\
+		docker compose -f ./otel-collector/docker-compose.yml \
+		down --remove-orphans --volumes;' EXIT;\
+		docker compose -f ./otel-collector/docker-compose.yml \
+		up --remove-orphans --build --force-recreate;";
 compose-postgres-cluster:
 	@bash -c "trap '\
 		docker compose -f ./postgres-cluster/docker-compose.yml \
 		down --remove-orphans --volumes;' EXIT;\
 		docker compose -f ./postgres-cluster/docker-compose.yml \
-		up --remove-orphans --build;";
+		up --remove-orphans --build --force-recreate;";

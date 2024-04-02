@@ -7,7 +7,7 @@ secrets:
   s3access: { file: ./.secret/.s3access }
   s3secret: { file: ./.secret/.s3secret }
 networks:
-  minio_default: { external: true }
+  bridge: { external: true, name: net }
 services:
   # --------------------------------------------------------------------------------------------------------------------
   mimir-base:
@@ -16,8 +16,8 @@ services:
     labels:
       kompose.service.type: nodeport
       kompose.volume.type: configMap
-    networks: [minio_default]
-    ports: ["3300"]
+    networks: [bridge]
+    ports: ["3300","3301"]
     secrets:
       - { source: s3host, target: /run/secrets/s3host/s3host }
       - { source: s3port, target: /run/secrets/s3port/s3port }

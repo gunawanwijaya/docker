@@ -62,9 +62,13 @@ mkdir -p "${DIR}";
 [ -d "./postgres-cluster" ] || exitNotInDir;
 DIR="./postgres-cluster/.secret";
 mkdir -p "${DIR}";
-[ ! -f "${DIR}/.pgreplication-slot" ] && echo -n "$(rand 40)"      > "${DIR}/.pgreplication-slot"  && echo "${DIR}/.uname created";
-[ ! -f "${DIR}/.pgreplication-username" ] && echo -n "$(rand 40)"  > "${DIR}/.pgreplication-username"  && echo "${DIR}/.uname created";
-[ ! -f "${DIR}/.pgreplication-password" ] && echo -n "$(rand 40)"  > "${DIR}/.pgreplication-password"  && echo "${DIR}/.uname created";
-[ ! -f "${DIR}/.pg-password" ] && echo -n "$(rand 40)"             > "${DIR}/.pg-password"  && echo "${DIR}/.paswd created";
+[ ! -f "${DIR}/.pgreplication-slot" ] && echo -n "$(rand 40 | tr '[:upper:]' '[:lower:]')"      > "${DIR}/.pgreplication-slot"  && echo "${DIR}/.pgreplication-slot created";
+[ ! -f "${DIR}/.pgreplication-username" ] && echo -n "$(rand 40 | tr '[:upper:]' '[:lower:]')"  > "${DIR}/.pgreplication-username"  && echo "${DIR}/.pgreplication-username created";
+[ ! -f "${DIR}/.pgreplication-password" ] && echo -n "$(rand 40)"                               > "${DIR}/.pgreplication-password"  && echo "${DIR}/.pgreplication-password created";
+[ ! -f "${DIR}/.pgreadonly-username" ] && echo -n "$(rand 40 | tr '[:upper:]' '[:lower:]')"     > "${DIR}/.pgreadonly-username"  && echo "${DIR}/.pgreadonly-username created";
+[ ! -f "${DIR}/.pgreadonly-password" ] && echo -n "$(rand 40)"                                  > "${DIR}/.pgreadonly-password"  && echo "${DIR}/.pgreadonly-password created";
+[ ! -f "${DIR}/.pg-username" ] && echo -n "$(rand 40)"                                          > "${DIR}/.pg-username"  && echo "${DIR}/.pg-username created";
+[ ! -f "${DIR}/.pg-password" ] && echo -n "$(rand 40)"                                          > "${DIR}/.pg-password"  && echo "${DIR}/.pg-password created";
+[ ! -f "${DIR}/.pg-database" ] && echo -n "$(rand 40)"                                          > "${DIR}/.pg-database"  && echo "${DIR}/.pg-database created";
 # ----------------------------------------------------------------------------------------------------------------------
 exit 0;

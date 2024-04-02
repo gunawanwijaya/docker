@@ -15,8 +15,8 @@ s3_secret=$(cat /run/secrets/s3secret/s3secret);
 s3_url="http://${s3_access}:${s3_secret}@${s3_host}.${s3_region}:${s3_port}/${s3_bucket}";
 # ----------------------------------------------------------------------------------------------------------------------
 tmp="/tmp/loki/loki-${target}${suffix}";
-mkdir -p        /data/loki /tmp/loki /var/log/loki;
-chown -R loki   /data/loki /tmp/loki /var/log/loki;
+mkdir -p        /data/loki /tmp/loki /var/log/loki ${tmp};
+# chown -R loki   /data/loki /tmp/loki /var/log/loki ${tmp};
 # sed -i "s|/home/loki:/sbin/nologin|/home/loki:/bin/sh|" /etc/passwd;
 # echo "A ------------"
 # timeout 1 sh -c 'cat < /dev/null > /dev/tcp/127.0.0.1/3100'; echo $?;
