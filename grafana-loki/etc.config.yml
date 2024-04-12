@@ -22,6 +22,8 @@ server:
   # http_listen_address: ""
   http_listen_port: 3100 # default=3100
   log_level: warn
+  grpc_server_max_recv_msg_size: 24_194_304 # 4194304
+  grpc_server_max_send_msg_size: 24_194_304 # 4194304
 # ----------------------------------------------------------------------------------------------------------------------
 # https://grafana.com/docs/loki/latest/configuration/#distributor
 # 
@@ -56,6 +58,16 @@ query_scheduler:
 # The frontend block configures the Loki query-frontend.
 frontend:
   query_stats_enabled: false
+  tail_proxy_url: ""
+# ----------------------------------------------------------------------------------------------------------------------
+# https://grafana.com/docs/loki/latest/configuration/#frontend_worker
+# 
+# The frontend_worker configures the worker - running within the Loki querier -
+# picking up and executing queries enqueued by the query-frontend.
+frontend_worker:
+  frontend_address: ""
+  # frontend_address: loki-query-frontend:3101
+  # scheduler_address: loki-query-scheduler:3101
 # ----------------------------------------------------------------------------------------------------------------------
 # https://grafana.com/docs/loki/latest/configuration/#query_range
 # 
@@ -79,19 +91,6 @@ ruler:
   # alertmanager_url: localhost:9093
   wal:
     dir: ruler-wal
-  # remote_write:
-  #   clients:
-  #     mimir:
-  #       url: http://mimir-distributor:3300/api/v1/push
-  #       send_exemplars: true
-  #       send_native_histograms: true
-# ----------------------------------------------------------------------------------------------------------------------
-# https://grafana.com/docs/loki/latest/configuration/#ingester_client
-# 
-# The ingester_client block configures how the distributor will connect to
-# ingesters. Only appropriate when running all components, the distributor, or
-# the querier.
-# ingester_client: null
 # ----------------------------------------------------------------------------------------------------------------------
 # https://grafana.com/docs/loki/latest/configuration/#ingester
 # 
@@ -104,46 +103,46 @@ ingester:
         store: memberlist # consul, etcd, inmemory, memberlist, multi.
       heartbeat_timeout: 1m
       replication_factor: 3
-      zone_awareness_enabled: false
-      excluded_zones: ""
-    num_tokens: 128
-    heartbeat_period: 5s
-    heartbeat_timeout: 1m
-    observe_period: 0s
-    join_after: 0s
-    min_ready_duration: 15s
-    # interface_names: list of [<private network interfaces>]
-    final_sleep: 0s
-    tokens_file_path: ""
-    availability_zone: ""
-    unregister_on_shutdown: true
-    readiness_check_ring_health: true
-    address: ""
-    port: 0
-    id: "<hostname>"
-  max_transfer_retries: 0
-  concurrent_flushes: 32
-  flush_check_period: 30s
-  flush_op_timeout: 10m
-  chunk_retain_period: 0s
-  chunk_idle_period: 30m
-  chunk_block_size: 262144
-  chunk_target_size: 1572864
-  chunk_encoding: "gzip"
-  max_chunk_age: 2h
-  autoforget_unhealthy: false
-  sync_period: 0s
-  sync_min_utilization: 0
-  max_returned_stream_errors: 10
-  query_store_max_look_back_period: 0s
-  wal:
-    enabled: true
-    dir: "/tmp/loki/wal"
-    checkpoint_duration: 5m
-    flush_on_shutdown: false
-    replay_memory_ceiling: 4GB
-  index_shards: 32
-  max_dropped_streams: 10
+  #     zone_awareness_enabled: false
+  #     excluded_zones: ""
+  #   num_tokens: 128
+  #   heartbeat_period: 5s
+  #   heartbeat_timeout: 1m
+  #   observe_period: 0s
+  #   join_after: 0s
+  #   min_ready_duration: 15s
+  #   # interface_names: list of [<private network interfaces>]
+  #   final_sleep: 0s
+  #   tokens_file_path: ""
+  #   availability_zone: ""
+  #   unregister_on_shutdown: true
+  #   readiness_check_ring_health: true
+  #   address: ""
+  #   port: 0
+  #   # id: "<hostname>"
+  # max_transfer_retries: 0
+  # concurrent_flushes: 32
+  # flush_check_period: 30s
+  # flush_op_timeout: 10m
+  # chunk_retain_period: 0s
+  # chunk_idle_period: 30m
+  # chunk_block_size: 262144
+  # chunk_target_size: 1572864
+  # chunk_encoding: "gzip"
+  # max_chunk_age: 2h
+  # autoforget_unhealthy: false
+  # sync_period: 0s
+  # sync_min_utilization: 0
+  # max_returned_stream_errors: 10
+  # query_store_max_look_back_period: 0s
+  # wal:
+  #   enabled: true
+  #   dir: "/tmp/loki/wal"
+  #   checkpoint_duration: 5m
+  #   flush_on_shutdown: false
+  #   replay_memory_ceiling: 4GB
+  # index_shards: 32
+  # max_dropped_streams: 10
 
 # ----------------------------------------------------------------------------------------------------------------------
 # https://grafana.com/docs/loki/latest/configuration/#index_gateway
@@ -233,13 +232,8 @@ compactor:
 # The limits_config block configures global and per-tenant limits in Loki.
 limits_config:
   query_timeout: 5m0s
-# ----------------------------------------------------------------------------------------------------------------------
-# https://grafana.com/docs/loki/latest/configuration/#frontend_worker
-# 
-# The frontend_worker configures the worker - running within the Loki querier -
-# picking up and executing queries enqueued by the query-frontend.
-frontend_worker:
-  frontend_address: loki-query-frontend:3101
+  ingestion_rate_mb: 100
+  ingestion_burst_size_mb: 100
 # ----------------------------------------------------------------------------------------------------------------------
 # https://grafana.com/docs/loki/latest/configuration/#table_manager
 # 
@@ -256,12 +250,12 @@ frontend_worker:
 # a ring unless otherwise specified in the component's configuration section.
 memberlist:
   abort_if_cluster_join_fails: false
-  # advertise_port: 7946
   bind_port: 7946
-  join_members:
-  - loki-ingester-0:7946
-  - loki-ingester-1:7946
-  - loki-ingester-2:7946
+  # join_members:
+  # - loki-all:7946
+  # - loki-ingester-0:7946
+  # - loki-ingester-1:7946
+  # - loki-ingester-2:7946
 # ----------------------------------------------------------------------------------------------------------------------
 # https://grafana.com/docs/loki/latest/configuration/#runtime_config
 # 
@@ -298,8 +292,8 @@ common:
     kvstore:
       store: memberlist
     # instance_addr: 127.0.0.1
-  compactor_address: http://loki-compactor:3100
-  compactor_grpc_address: loki-compactor:3101
+  # compactor_address: http://loki-compactor:3100
+  # compactor_grpc_address: loki-compactor:3101
 # ----------------------------------------------------------------------------------------------------------------------
 # How long to wait between SIGTERM and shutdown. After receiving SIGTERM, Loki
 # will report 503 Service Unavailable status via /ready endpoint.

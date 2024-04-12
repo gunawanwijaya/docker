@@ -167,7 +167,7 @@ storage:
       max_workers: 100
       queue_depth: 10_000
     wal:
-      path: /tmp/tempo/wal
+      # path: /tmp/tempo/wal
       v2_encoding: snappy # options: none, gzip, lz4-64k, lz4-256k, lz4-1M, lz4, snappy, zstd, s2
       search_encoding: none # options: none, gzip, lz4-64k, lz4-256k, lz4-1M, lz4, snappy, zstd, s2
       ingestion_time_range_slack: 2m
@@ -206,10 +206,10 @@ memberlist:
   abort_if_cluster_join_fails: false
   # bind_addr: []
   bind_port: 7946
-  join_members:
-    - tempo-ingester-0:7946
-    - tempo-ingester-1:7946
-    - tempo-ingester-2:7946
+  # join_members:
+  #   - tempo-ingester-0:7946
+  #   - tempo-ingester-1:7946
+  #   - tempo-ingester-2:7946
 # ----------------------------------------------------------------------------------------------------------------------
 # overrides:
 #   # ingestion_rate_strategy: local # options: global, local

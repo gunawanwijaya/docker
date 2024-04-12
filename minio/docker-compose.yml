@@ -1,18 +1,17 @@
-version: "3"
 networks:
   bridge: { name: net }
 secrets:
   uname: { file: ./.secret/.uname }
   paswd: { file: ./.secret/.paswd }
-  loki-bucket: { file: ./../grafana-loki-cluster/.secret/.s3bucket }
-  loki-access: { file: ./../grafana-loki-cluster/.secret/.s3access }
-  loki-secret: { file: ./../grafana-loki-cluster/.secret/.s3secret }
-  tempo-bucket: { file: ./../grafana-tempo-cluster/.secret/.s3bucket }
-  tempo-access: { file: ./../grafana-tempo-cluster/.secret/.s3access }
-  tempo-secret: { file: ./../grafana-tempo-cluster/.secret/.s3secret }
-  mimir-bucket: { file: ./../grafana-mimir-cluster/.secret/.s3bucket }
-  mimir-access: { file: ./../grafana-mimir-cluster/.secret/.s3access }
-  mimir-secret: { file: ./../grafana-mimir-cluster/.secret/.s3secret }
+  loki-bucket: { file: ./../grafana-loki/.secret/.s3bucket }
+  loki-access: { file: ./../grafana-loki/.secret/.s3access }
+  loki-secret: { file: ./../grafana-loki/.secret/.s3secret }
+  tempo-bucket: { file: ./../grafana-tempo/.secret/.s3bucket }
+  tempo-access: { file: ./../grafana-tempo/.secret/.s3access }
+  tempo-secret: { file: ./../grafana-tempo/.secret/.s3secret }
+  mimir-bucket: { file: ./../grafana-mimir/.secret/.s3bucket }
+  mimir-access: { file: ./../grafana-mimir/.secret/.s3access }
+  mimir-secret: { file: ./../grafana-mimir/.secret/.s3secret }
 services:
   minio:
     container_name: minio
@@ -43,6 +42,7 @@ services:
       - MINIO_STORAGE_CLASS_STANDARD=EC:2
       - MINIO_BROWSER=on
     entrypoint: ["/entrypoint"]
+    user: ${UID}:${GID}
     volumes:
       - ./docker-entry.sh:/entrypoint
       - ./../.volume/data:/data

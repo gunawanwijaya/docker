@@ -1,6 +1,6 @@
 module svc
 
-go 1.20
+go 1.22
 
 require (
 	github.com/go-logr/zerologr v1.2.3

@@ -5,44 +5,68 @@ init-secret:
 	@sh ./.script/init-secret.sh
 
 compose-minio:
-	@bash -c "trap '\
+	@UID=${UID} GID=${GID} bash -c "trap '\
 		docker compose -f ./minio/docker-compose.yml \
 		down --remove-orphans --volumes;' EXIT;\
 		docker compose -f ./minio/docker-compose.yml \
 		up --remove-orphans --build --force-recreate;";
+compose-postgres-single:
+	@UID=${UID} GID=${GID} bash -c "trap '\
+		docker compose -f ./postgres/docker-compose.yml \
+		--profile single down --remove-orphans --volumes;' EXIT;\
+		docker compose -f ./postgres/docker-compose.yml \
+		--profile single up --remove-orphans --build --force-recreate;";
+compose-loki-all:
+	@UID=${UID} GID=${GID} bash -c "trap '\
+		docker compose -f ./grafana-loki/docker-compose.yml \
+		--profile all down --remove-orphans --volumes;' EXIT;\
+		docker compose -f ./grafana-loki/docker-compose.yml \
+		--profile all up --remove-orphans --build --force-recreate;";
+compose-tempo-all:
+	@UID=${UID} GID=${GID} bash -c "trap '\
+		docker compose -f ./grafana-tempo/docker-compose.yml \
+		--profile all down --remove-orphans --volumes;' EXIT;\
+		docker compose -f ./grafana-tempo/docker-compose.yml \
+		--profile all up --remove-orphans --build --force-recreate;";
+compose-mimir-all:
+	@UID=${UID} GID=${GID} bash -c "trap '\
+		docker compose -f ./grafana-mimir/docker-compose.yml \
+		--profile all down --remove-orphans --volumes;' EXIT;\
+		docker compose -f ./grafana-mimir/docker-compose.yml \
+		--profile all up --remove-orphans --build --force-recreate;";
+compose-postgres-ha:
+	@UID=${UID} GID=${GID} bash -c "trap '\
+		docker compose -f ./postgres/docker-compose.yml \
+		--profile ha down --remove-orphans --volumes;' EXIT;\
+		docker compose -f ./postgres/docker-compose.yml \
+		--profile ha up --remove-orphans --build --force-recreate;";
 compose-loki-cluster:
-	@bash -c "trap '\
-		docker compose -f ./grafana-loki-cluster/docker-compose.yml \
-		down --remove-orphans --volumes;' EXIT;\
-		docker compose -f ./grafana-loki-cluster/docker-compose.yml \
-		up --remove-orphans --build --force-recreate;";
+	@UID=${UID} GID=${GID} bash -c "trap '\
+		docker compose -f ./grafana-loki/docker-compose.yml \
+		--profile cluster down --remove-orphans --volumes;' EXIT;\
+		docker compose -f ./grafana-loki/docker-compose.yml \
+		--profile cluster up --remove-orphans --build --force-recreate;";
 compose-tempo-cluster:
-	@bash -c "trap '\
-		docker compose -f ./grafana-tempo-cluster/docker-compose.yml \
-		down --remove-orphans --volumes;' EXIT;\
-		docker compose -f ./grafana-tempo-cluster/docker-compose.yml \
-		up --remove-orphans --build --force-recreate;";
+	@UID=${UID} GID=${GID} bash -c "trap '\
+		docker compose -f ./grafana-tempo/docker-compose.yml \
+		--profile cluster down --remove-orphans --volumes;' EXIT;\
+		docker compose -f ./grafana-tempo/docker-compose.yml \
+		--profile cluster up --remove-orphans --build --force-recreate;";
 compose-mimir-cluster:
-	@bash -c "trap '\
-		docker compose -f ./grafana-mimir-cluster/docker-compose.yml \
+	@UID=${UID} GID=${GID} bash -c "trap '\
+		docker compose -f ./grafana-mimir/docker-compose.yml \
+		--profile cluster down --remove-orphans --volumes;' EXIT;\
+		docker compose -f ./grafana-mimir/docker-compose.yml \
+		--profile cluster up --remove-orphans --build --force-recreate;";
+compose-grafana:
+	@UID=${UID} GID=${GID} bash -c "trap '\
+		docker compose -f ./grafana/docker-compose.yml \
 		down --remove-orphans --volumes;' EXIT;\
-		docker compose -f ./grafana-mimir-cluster/docker-compose.yml \
-		up --remove-orphans --build --force-recreate;";
-compose-grafana-dashboard:
-	@bash -c "trap '\
-		docker compose -f ./grafana-dashboard/docker-compose.yml \
-		down --remove-orphans --volumes;' EXIT;\
-		docker compose -f ./grafana-dashboard/docker-compose.yml \
+		docker compose -f ./grafana/docker-compose.yml \
 		up --remove-orphans --build --force-recreate;";
 compose-otel-collector:
-	@bash -c "trap '\
+	@UID=${UID} GID=${GID} bash -c "trap '\
 		docker compose -f ./otel-collector/docker-compose.yml \
 		down --remove-orphans --volumes;' EXIT;\
 		docker compose -f ./otel-collector/docker-compose.yml \
-		up --remove-orphans --build --force-recreate;";
-compose-postgres-cluster:
-	@bash -c "trap '\
-		docker compose -f ./postgres-cluster/docker-compose.yml \
-		down --remove-orphans --volumes;' EXIT;\
-		docker compose -f ./postgres-cluster/docker-compose.yml \
 		up --remove-orphans --build --force-recreate;";

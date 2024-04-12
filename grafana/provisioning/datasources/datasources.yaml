@@ -1,0 +1,51 @@
+apiVersion: 1
+datasources:
+  [
+    {
+      uid: lgtm-loki-cluster,
+      name: lgtm-loki-cluster,
+      type: loki,
+      url: http://loki-query-frontend:3100,
+      isDefault: false,
+      editable: true,
+      jsonData: {},
+      secureJsonData: {},
+    },
+    {
+      uid: lgtm-tempo-cluster,
+      name: lgtm-tempo-cluster,
+      type: tempo,
+      url: http://tempo-query-frontend:3200,
+      isDefault: true,
+      editable: true,
+      jsonData:
+        {
+          tracesToLogsV2: { datasourceUid: lgtm-loki-cluster },
+          lokiSearch: { datasourceUid: lgtm-loki-cluster },
+          tracesToMetrics: { datasourceUid: lgtm-mimir-cluster },
+          serviceMap: { datasourceUid: lgtm-mimir-cluster },
+        },
+      secureJsonData: {},
+    },
+    {
+      uid: lgtm-mimir-cluster,
+      name: lgtm-mimir-cluster,
+      type: prometheus,
+      url: http://mimir-query-frontend:3300/prometheus,
+      isDefault: false,
+      editable: true,
+      jsonData: { httpMethod: POST, prometheusType: Mimir },
+      secureJsonData: {},
+    },
+    {
+      uid: postgresql,
+      name: postgresql,
+      type: grafana-postgresql-datasource,
+      url: postgres-primary:5432,
+      user: _grafana,
+      isDefault: false,
+      editable: true,
+      jsonData: { database: _grafana, sslmode: disable },
+      secureJsonData: { password: _grafana },
+    },
+  ]

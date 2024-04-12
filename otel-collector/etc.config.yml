@@ -15,36 +15,36 @@ receivers:
   prometheus:
     config:
       scrape_configs:
-      #   - job_name: minio-cluster
-      #     static_configs:
-      #       - targets: [minio:9000]
-      #     metrics_path: /minio/v2/metrics/cluster
-      #   - job_name: minio-bucket
-      #     static_configs:
-      #       - targets: [minio:9000]
-      #     metrics_path: /minio/v2/metrics/bucket
-      #   - job_name: minio-resource
-      #     static_configs:
-      #       - targets: [minio:9000]
-      #     metrics_path: /minio/v2/metrics/resource
-      #   - job_name: otelcol
-      #     static_configs:
-      #       - targets: [otelcol:8888]
-      #   - job_name: grafana
-      #     static_configs:
-      #       - targets: [grafana-dashboard:3000]
-      #   - job_name: loki
-      #     static_configs:
-      #       - targets: [loki-query-frontend:3100]
-      #   - job_name: tempo
-      #     static_configs:
-      #       - targets: [tempo-query-frontend:3200]
-      #   - job_name: mimir
-      #     static_configs:
-      #       - targets: [mimir-query-frontend:3300]
-        - job_name: beyla
+        # - job_name: minio-cluster
+        #   static_configs:
+        #     - targets: [minio:9000]
+        #   metrics_path: /minio/v2/metrics/cluster
+        # - job_name: minio-bucket
+        #   static_configs:
+        #     - targets: [minio:9000]
+        #   metrics_path: /minio/v2/metrics/bucket
+        # - job_name: minio-resource
+        #   static_configs:
+        #     - targets: [minio:9000]
+        #   metrics_path: /minio/v2/metrics/resource
+        - job_name: otelcol
           static_configs:
-            - targets: [localhost:6060]
+            - targets: [otelcol:8888]
+        - job_name: grafana
+          static_configs:
+            - targets: [grafana:3000]
+        - job_name: loki
+          static_configs:
+            - targets: [loki-query-frontend:3100]
+        - job_name: tempo
+          static_configs:
+            - targets: [tempo-query-frontend:3200]
+        - job_name: mimir
+          static_configs:
+            - targets: [mimir-query-frontend:3300]
+        # - job_name: beyla
+        #   static_configs:
+        #     - targets: [localhost:6060]
 
 # ----------------------------------------------------------------------------------------------------------------------
 # processors
@@ -53,8 +53,8 @@ processors:
   batch: # Data sources: traces, metrics, logs
   memory_limiter: # Data sources: traces, metrics, logs
     check_interval: 5s
-    limit_mib: 4000
-    spike_limit_mib: 500
+    limit_mib: 400
+    spike_limit_mib: 200
 
 # ----------------------------------------------------------------------------------------------------------------------
 # exporters
@@ -70,7 +70,7 @@ exporters:
   loki:
     endpoint: http://loki-distributor:3100/loki/api/v1/push
   otlp/tempo:
-    endpoint: tempo-distributor:3201
+    endpoint: tempo-distributor:4317
     tls: { insecure: true }
   otlphttp/mimir:
     endpoint: http://mimir-distributor:3300/otlp
@@ -97,15 +97,15 @@ service:
       level: detailed
       address: :8888
   pipelines:
-    # logs:
-    #   receivers: [filelog]
-    #   processors: [memory_limiter, batch, attributes/loki]
-    #   exporters: [loki]
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [loki]
     traces:
       receivers: [otlp]
       processors: [memory_limiter, batch]
       exporters: [otlp/tempo]
     metrics:
-      receivers: [prometheus, otlp]
+      receivers: [otlp, prometheus]
       processors: [memory_limiter, batch]
       exporters: [otlphttp/mimir]

@@ -1,4 +1,3 @@
-version: "3"
 networks:
   bridge: { external: true, name: net }
 secrets:
@@ -13,6 +12,7 @@ secrets:
 services:
   # --------------------------------------------------------------------------------------------------------------------
   postgres-primary:
+    profiles: [single, ha]
     container_name: postgres-primary
     image: postgres:alpine
     labels:
@@ -22,6 +22,7 @@ services:
     networks: [bridge]
     ports: [5432:5432]
     entrypoint: [/entrypoint]
+    user: ${UID}:${GID}
     volumes:
       - ./docker-entry.primary.sh:/entrypoint:ro
       - ./docker-health.primary.sh:/healthcheck:ro
@@ -52,6 +53,7 @@ services:
       retries: 9
   # --------------------------------------------------------------------------------------------------------------------
   postgres-standby:
+    profiles: [ha]
     container_name: postgres-standby
     image: postgres:alpine
     labels:
@@ -61,6 +63,7 @@ services:
     networks: [bridge]
     ports: [5433:5432]
     entrypoint: [/entrypoint]
+    user: ${UID}:${GID}
     volumes:
       - ./docker-entry.standby.sh:/entrypoint:ro
       - ./../.volume/data:/data

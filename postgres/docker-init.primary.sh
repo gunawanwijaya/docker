@@ -35,6 +35,10 @@ psql -v "ON_ERROR_STOP=1" -U "$POSTGRES_USER" -d "$POSTGRES_DB" <<-EOSQL
 		ENCRYPTED PASSWORD '_sonar';
 	CREATE DATABASE _sonar OWNER _sonar;
 	-----------------------------------------------------------------------------------------------
+	CREATE USER _camunda WITH
+		ENCRYPTED PASSWORD '_camunda';
+	CREATE DATABASE _camunda OWNER _camunda;
+	-----------------------------------------------------------------------------------------------
 	\du
 EOSQL
 

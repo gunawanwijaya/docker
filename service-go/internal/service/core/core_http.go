@@ -28,15 +28,9 @@ func (x *Core) buildHTTP(ctx context.Context) (*Core, error) {
 
 	srv := &http.Server{}
 	x.c.WithHTTPServer(srv)
-	if srv == nil {
-		return nil, ErrInvalidHTTPServer
-	}
 
 	mux := &httprouter.Router{}
 	x.c.WithHTTPRouter(mux)
-	if mux == nil {
-		return nil, ErrInvalidHTTPServer
-	}
 
 	srv.Handler = x.registerHTTP(ctx, mux)
 	x.httpserver = srv

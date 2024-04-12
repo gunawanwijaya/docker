@@ -1,4 +1,3 @@
-version: "3"
 secrets:
   s3host: { file: ./.secret/.s3host }
   s3port: { file: ./.secret/.s3port }
@@ -10,15 +9,15 @@ networks:
   bridge: { external: true, name: net }
 services:
   # --------------------------------------------------------------------------------------------------------------------
-  loki-base:
-    container_name: loki-base
-    image: grafana/loki:latest
+  mimir-base:
+    profiles: [cluster]
+    container_name: mimir-base
+    image: grafana/mimir:latest
     labels:
       kompose.service.type: nodeport
       kompose.volume.type: configMap
-    user: root:root
     networks: [bridge]
-    ports: ["3100","3101"]
+    ports: ["3300","3301"]
     secrets:
       - { source: s3host, target: /run/secrets/s3host/s3host }
       - { source: s3port, target: /run/secrets/s3port/s3port }
@@ -27,84 +26,104 @@ services:
       - { source: s3access, target: /run/secrets/s3access/s3access }
       - { source: s3secret, target: /run/secrets/s3secret/s3secret }
     entrypoint: [sh]
+    user: ${UID}:${GID}
     volumes:
       - ./docker-entry.sh:/entrypoint:ro
-      - ./etc.config.yml:/etc/config/loki.yml:ro
+      - ./etc.config.yml:/etc/config/mimir.yml:ro
       - ./../.volume/data:/data
       - ./../.volume/tmp:/tmp
       - ./../.volume/log:/var/log
     environment:
       - TZ=Asia/Jakarta
   # --------------------------------------------------------------------------------------------------------------------
-  loki-distributor:
-    container_name: loki-distributor
-    extends: { service: loki-base }
-    entrypoint: [/entrypoint, distributor]
-    depends_on: [loki-ingester-0, loki-ingester-1, loki-ingester-2]
+  mimir-all:
+    profiles: [all]
+    container_name: mimir-all
+    extends: { service: mimir-base }
+    entrypoint: [/entrypoint, all]
+    depends_on: []
   # --------------------------------------------------------------------------------------------------------------------
-  loki-ingester-0:
-    container_name: loki-ingester-0
-    extends: { service: loki-base }
+  mimir-distributor:
+    profiles: [cluster]
+    container_name: mimir-distributor
+    extends: { service: mimir-base }
+    entrypoint: [/entrypoint, distributor]
+    depends_on: [mimir-ingester-0, mimir-ingester-1, mimir-ingester-2]
+  # --------------------------------------------------------------------------------------------------------------------
+  mimir-ingester-0:
+    profiles: [cluster]
+    container_name: mimir-ingester-0
+    extends: { service: mimir-base }
     entrypoint: [/entrypoint, ingester, "-0"]
     depends_on: []
   # --------------------------------------------------------------------------------------------------------------------
-  loki-ingester-1:
-    container_name: loki-ingester-1
-    extends: { service: loki-base }
+  mimir-ingester-1:
+    profiles: [cluster]
+    container_name: mimir-ingester-1
+    extends: { service: mimir-base }
     entrypoint: [/entrypoint, ingester, "-1"]
     depends_on: []
   # --------------------------------------------------------------------------------------------------------------------
-  loki-ingester-2:
-    container_name: loki-ingester-2
-    extends: { service: loki-base }
+  mimir-ingester-2:
+    profiles: [cluster]
+    container_name: mimir-ingester-2
+    extends: { service: mimir-base }
     entrypoint: [/entrypoint, ingester, "-2"]
     depends_on: []
   # --------------------------------------------------------------------------------------------------------------------
-  loki-query-scheduler:
-    container_name: loki-query-scheduler
-    extends: { service: loki-base }
+  mimir-query-scheduler:
+    profiles: [cluster]
+    container_name: mimir-query-scheduler
+    extends: { service: mimir-base }
     entrypoint: [/entrypoint, query-scheduler]
     depends_on: []
   # --------------------------------------------------------------------------------------------------------------------
-  loki-query-frontend:
-    container_name: loki-query-frontend
-    extends: { service: loki-base }
+  mimir-query-frontend:
+    profiles: [cluster]
+    container_name: mimir-query-frontend
+    extends: { service: mimir-base }
     entrypoint: [/entrypoint, query-frontend]
     depends_on: []
   # --------------------------------------------------------------------------------------------------------------------
-  loki-querier-0:
-    container_name: loki-querier-0
-    extends: { service: loki-base }
+  mimir-querier-0:
+    profiles: [cluster]
+    container_name: mimir-querier-0
+    extends: { service: mimir-base }
     entrypoint: [/entrypoint, querier, "-0"]
-    depends_on: [loki-query-frontend]
+    depends_on: [mimir-query-frontend]
   # --------------------------------------------------------------------------------------------------------------------
-  loki-querier-1:
-    container_name: loki-querier-1
-    extends: { service: loki-base }
+  mimir-querier-1:
+    profiles: [cluster]
+    container_name: mimir-querier-1
+    extends: { service: mimir-base }
     entrypoint: [/entrypoint, querier, "-1"]
-    depends_on: [loki-query-frontend]
+    depends_on: [mimir-query-frontend]
   # --------------------------------------------------------------------------------------------------------------------
-  loki-querier-2:
-    container_name: loki-querier-2
-    extends: { service: loki-base }
+  mimir-querier-2:
+    profiles: [cluster]
+    container_name: mimir-querier-2
+    extends: { service: mimir-base }
     entrypoint: [/entrypoint, querier, "-2"]
-    depends_on: [loki-query-frontend]
+    depends_on: [mimir-query-frontend]
   # --------------------------------------------------------------------------------------------------------------------
-  loki-ruler:
-    container_name: loki-ruler
-    extends: { service: loki-base }
+  mimir-ruler:
+    profiles: [cluster]
+    container_name: mimir-ruler
+    extends: { service: mimir-base }
     entrypoint: [/entrypoint, ruler]
-    depends_on: []
+    depends_on: [mimir-ingester-0]
   # --------------------------------------------------------------------------------------------------------------------
-  loki-compactor:
-    container_name: loki-compactor
-    extends: { service: loki-base }
+  mimir-compactor:
+    profiles: [cluster]
+    container_name: mimir-compactor
+    extends: { service: mimir-base }
     entrypoint: [/entrypoint, compactor]
-    depends_on: []
+    depends_on: [mimir-ingester-0]
   # --------------------------------------------------------------------------------------------------------------------
-  loki-index-gateway:
-    container_name: loki-index-gateway
-    extends: { service: loki-base }
-    entrypoint: [/entrypoint, index-gateway]
-    depends_on: []
+  mimir-store-gateway:
+    profiles: [cluster]
+    container_name: mimir-store-gateway
+    extends: { service: mimir-base }
+    entrypoint: [/entrypoint, store-gateway]
+    depends_on: [mimir-ingester-0]
   # --------------------------------------------------------------------------------------------------------------------
