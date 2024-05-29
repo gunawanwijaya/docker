@@ -10,6 +10,7 @@ networks:
 services:
   # --------------------------------------------------------------------------------------------------------------------
   tempo-base:
+    profiles: [_]
     container_name: tempo-base
     image: grafana/tempo:latest
     labels:

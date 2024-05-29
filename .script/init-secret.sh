@@ -53,6 +53,16 @@ mkdir -p "${DIR}";
 [ ! -f "${DIR}/.s3access" ] && echo -n "gr-tempo"          > "${DIR}/.s3access"   && echo "${DIR}/.s3access created";
 [ ! -f "${DIR}/.s3secret" ] && echo -n "$(rand 40)"        > "${DIR}/.s3secret"   && echo "${DIR}/.s3secret created";
 # ----------------------------------------------------------------------------------------------------------------------
+[ -d "./grafana-pyroscope" ] || exitNotInDir;
+DIR="./grafana-pyroscope/.secret";
+mkdir -p "${DIR}";
+[ ! -f "${DIR}/.s3host" ] && echo -n "minio"               > "${DIR}/.s3host"     && echo "${DIR}/.s3host created";
+[ ! -f "${DIR}/.s3port" ] && echo -n "9000"                > "${DIR}/.s3port"     && echo "${DIR}/.s3port created";
+[ ! -f "${DIR}/.s3region" ] && echo -n ""                  > "${DIR}/.s3region"   && echo "${DIR}/.s3region created";
+[ ! -f "${DIR}/.s3bucket" ] && echo -n "gr-pyroscope-bucket" > "${DIR}/.s3bucket" && echo "${DIR}/.s3bucket created";
+[ ! -f "${DIR}/.s3access" ] && echo -n "gr-pyroscope"      > "${DIR}/.s3access"   && echo "${DIR}/.s3access created";
+[ ! -f "${DIR}/.s3secret" ] && echo -n "$(rand 40)"        > "${DIR}/.s3secret"   && echo "${DIR}/.s3secret created";
+# ----------------------------------------------------------------------------------------------------------------------
 [ -d "./minio" ] || exitNotInDir;
 DIR="./minio/.secret";
 mkdir -p "${DIR}";

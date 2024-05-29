@@ -12,6 +12,9 @@ secrets:
   mimir-bucket: { file: ./../grafana-mimir/.secret/.s3bucket }
   mimir-access: { file: ./../grafana-mimir/.secret/.s3access }
   mimir-secret: { file: ./../grafana-mimir/.secret/.s3secret }
+  pyroscope-bucket: { file: ./../grafana-pyroscope/.secret/.s3bucket }
+  pyroscope-access: { file: ./../grafana-pyroscope/.secret/.s3access }
+  pyroscope-secret: { file: ./../grafana-pyroscope/.secret/.s3secret }
 services:
   minio:
     container_name: minio
@@ -34,6 +37,9 @@ services:
       - { source: mimir-bucket, target: /run/secrets/mimir-bucket/mimir-bucket }
       - { source: mimir-access, target: /run/secrets/mimir-access/mimir-access }
       - { source: mimir-secret, target: /run/secrets/mimir-secret/mimir-secret }
+      - { source: pyroscope-bucket, target: /run/secrets/pyroscope-bucket/pyroscope-bucket }
+      - { source: pyroscope-access, target: /run/secrets/pyroscope-access/pyroscope-access }
+      - { source: pyroscope-secret, target: /run/secrets/pyroscope-secret/pyroscope-secret }
     environment:
       - TZ=Asia/Jakarta
       - MINIO_ROOT_USER_FILE=/run/secrets/uname/uname

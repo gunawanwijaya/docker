@@ -22,7 +22,7 @@ query_frontend="query-frontend"
 query_scheduler="query-scheduler"
 memberlist_join="ingester-0"
 compactor="compactor"
-if [ ${target} = "all" ]; then
+if [ "${target}" = "all" ]; then
     querier="all"
     query_frontend="all"
     query_scheduler="all"
@@ -33,8 +33,8 @@ fi
 echo "ok=${1}${2}"
 # /usr/bin/loki -config.file="/etc/config/loki.yml" -list-targets;
 # /usr/bin/loki -config.file="/etc/config/loki.yml" -version;
+    # -common.storage.s3.url="${s3_url}" \
 /usr/bin/loki -config.file="/etc/config/loki.yml" -target="${target}" \
-    -common.storage.s3.url="${s3_url}" \
     -ruler.rule-path="${tmp}/rules" \
     -ruler.storage.local.directory="${tmp}/ruler_storage" \
     -ruler.wal.dir="${tmp}/ruler_wal" \
@@ -50,11 +50,11 @@ echo "ok=${1}${2}"
     -querier.frontend-address="loki-${query_frontend}:3101" \
     -common.compactor-address="http://loki-${compactor}:3100" \
     -common.compactor-grpc-address="loki-${compactor}:3101" \
-    -memberlist.join="loki-${memberlist_join}:7946" \
  2>&1 | tee "/var/log/loki/loki-${target}${suffix}.log";
 
 # -querier.scheduler-address="loki-${query_scheduler}:3101" \
 # -query-scheduler.ring.tokens-file-path \
+    # -memberlist.join="loki-${memberlist_join}:7946" \
 # -ingester.tokens-file-path \
 # -index-gateway.ring.tokens-file-path \
 # -boltdb.shipper.compactor.ring.tokens-file-path \

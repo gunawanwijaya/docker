@@ -69,6 +69,9 @@ exporters:
     sampling_thereafter: 200
   loki:
     endpoint: http://loki-distributor:3100/loki/api/v1/push
+  otlp/loki:
+    endpoint: loki-distributor:4317
+    tls: { insecure: true }
   otlp/tempo:
     endpoint: tempo-distributor:4317
     tls: { insecure: true }

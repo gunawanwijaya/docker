@@ -34,6 +34,12 @@ compose-mimir-all:
 		--profile all down --remove-orphans --volumes;' EXIT;\
 		docker compose -f ./grafana-mimir/docker-compose.yml \
 		--profile all up --remove-orphans --build --force-recreate;";
+compose-pyroscope-all:
+	@UID=${UID} GID=${GID} bash -c "trap '\
+		docker compose -f ./grafana-pyroscope/docker-compose.yml \
+		--profile all down --remove-orphans --volumes;' EXIT;\
+		docker compose -f ./grafana-pyroscope/docker-compose.yml \
+		--profile all up --remove-orphans --build --force-recreate;";
 compose-postgres-ha:
 	@UID=${UID} GID=${GID} bash -c "trap '\
 		docker compose -f ./postgres/docker-compose.yml \
@@ -57,6 +63,12 @@ compose-mimir-cluster:
 		docker compose -f ./grafana-mimir/docker-compose.yml \
 		--profile cluster down --remove-orphans --volumes;' EXIT;\
 		docker compose -f ./grafana-mimir/docker-compose.yml \
+		--profile cluster up --remove-orphans --build --force-recreate;";
+compose-pyroscope-cluster:
+	@UID=${UID} GID=${GID} bash -c "trap '\
+		docker compose -f ./grafana-pyroscope/docker-compose.yml \
+		--profile cluster down --remove-orphans --volumes;' EXIT;\
+		docker compose -f ./grafana-pyroscope/docker-compose.yml \
 		--profile cluster up --remove-orphans --build --force-recreate;";
 compose-grafana:
 	@UID=${UID} GID=${GID} bash -c "trap '\

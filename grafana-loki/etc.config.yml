@@ -1,8 +1,21 @@
+# https://grafana.com/docs/loki/latest/configure/#supported-contents-and-default-values-of-lokiyaml
+
+# A comma-separated list of components to run. The default value 'all' runs Loki
+# in single binary mode. The value 'read' is an alias to run only read-path
+# related components such as the querier and query-frontend, but all in the same
+# process. The value 'write' is an alias to run only write-path related
+# components such as the distributor and compactor, but all in the same process.
+# Supported values: all, compactor, distributor, ingester, querier,
+# query-scheduler, ingester-querier, query-frontend, index-gateway, ruler,
+# table-manager, read, write. A full list of available targets can be printed
+# when running Loki with the '-list-targets' command line flag.
+# CLI flag: -target
+# target: "all"
+
 # Enables authentication through the X-Scope-OrgID header, which must be present
 # if true. If false, the OrgID will always be set to 'fake'.
 # CLI flag: -auth.enabled
 auth_enabled: false # default = "all"
-
 
 # The amount of virtual memory in bytes to reserve as ballast in order to
 # optimize garbage collection. Larger ballasts result in fewer garbage
@@ -21,7 +34,8 @@ server:
   grpc_listen_port: 3101 # default=9095
   # http_listen_address: ""
   http_listen_port: 3100 # default=3100
-  log_level: warn
+  log_level: warn # debug, info, warn, error
+  log_format: json # logfmt, json
   grpc_server_max_recv_msg_size: 24_194_304 # 4194304
   grpc_server_max_send_msg_size: 24_194_304 # 4194304
 # ----------------------------------------------------------------------------------------------------------------------
@@ -60,15 +74,6 @@ frontend:
   query_stats_enabled: false
   tail_proxy_url: ""
 # ----------------------------------------------------------------------------------------------------------------------
-# https://grafana.com/docs/loki/latest/configuration/#frontend_worker
-# 
-# The frontend_worker configures the worker - running within the Loki querier -
-# picking up and executing queries enqueued by the query-frontend.
-frontend_worker:
-  frontend_address: ""
-  # frontend_address: loki-query-frontend:3101
-  # scheduler_address: loki-query-scheduler:3101
-# ----------------------------------------------------------------------------------------------------------------------
 # https://grafana.com/docs/loki/latest/configuration/#query_range
 # 
 # The query_range block configures the query splitting and caching in the Loki
@@ -91,6 +96,17 @@ ruler:
   # alertmanager_url: localhost:9093
   wal:
     dir: ruler-wal
+# https://grafana.com/docs/loki/latest/configure/#ingester_client
+# 
+# The ingester_client block configures how the distributor will connect to
+# ingesters. Only appropriate when running all components, the distributor, or
+# the querier.
+ingester_client:
+  pool_config:
+    client_cleanup_period: 20s
+    health_check_ingesters: true
+    remote_timeout: 3s
+  remote_timeout: 3s
 # ----------------------------------------------------------------------------------------------------------------------
 # https://grafana.com/docs/loki/latest/configuration/#ingester
 # 
@@ -145,6 +161,10 @@ ingester:
   # max_dropped_streams: 10
 
 # ----------------------------------------------------------------------------------------------------------------------
+# pattern_ingester:
+#   enabled: false
+
+# ----------------------------------------------------------------------------------------------------------------------
 # https://grafana.com/docs/loki/latest/configuration/#index_gateway
 # 
 # The index_gateway block configures the Loki index gateway server, responsible
@@ -154,6 +174,20 @@ index_gateway:
   ring:
     kvstore:
       store: memberlist
+# ----------------------------------------------------------------------------------------------------------------------
+# https://grafana.com/docs/loki/latest/configure/#bloom_compactor
+# 
+# Experimental: The bloom_compactor block configures the Loki bloom compactor
+# server, responsible for compacting stream indexes into bloom filters and
+# merging them as bloom blocks.
+# bloom_compactor:
+# ----------------------------------------------------------------------------------------------------------------------
+# https://grafana.com/docs/loki/latest/configure/#bloom_gateway
+# 
+# Experimental: The bloom_gateway block configures the Loki bloom gateway
+# server, responsible for serving queries for filtering chunks based on filter
+# expressions.
+# bloom_gateway:
 # ----------------------------------------------------------------------------------------------------------------------
 # https://grafana.com/docs/loki/latest/configuration/#storage_config
 # 
@@ -235,10 +269,19 @@ limits_config:
   ingestion_rate_mb: 100
   ingestion_burst_size_mb: 100
 # ----------------------------------------------------------------------------------------------------------------------
+# https://grafana.com/docs/loki/latest/configuration/#frontend_worker
+# 
+# The frontend_worker configures the worker - running within the Loki querier -
+# picking up and executing queries enqueued by the query-frontend.
+frontend_worker:
+  frontend_address: ""
+  # frontend_address: loki-query-frontend:3101
+  # scheduler_address: loki-query-scheduler:3101
+# ----------------------------------------------------------------------------------------------------------------------
 # https://grafana.com/docs/loki/latest/configuration/#table_manager
 # 
 # The table_manager block configures the table manager for retention.
-# table_manager: null
+table_manager:
 # ----------------------------------------------------------------------------------------------------------------------
 # https://grafana.com/docs/loki/latest/configuration/#memberlist
 # 
@@ -261,7 +304,14 @@ memberlist:
 # 
 # Configuration for 'runtime config' module, responsible for reloading runtime
 # configuration file.
-# runtime_config: null
+runtime_config: 
+# ----------------------------------------------------------------------------------------------------------------------
+# https://grafana.com/docs/loki/latest/configure/#operational_config
+# 
+# These are values which allow you to control aspects of Loki's operation, most
+# commonly used for controlling types of higher verbosity logging, the values
+# here can be overridden in the `configs` section of the `runtime_config` file.
+# operational_config:
 # ----------------------------------------------------------------------------------------------------------------------
 # https://grafana.com/docs/loki/latest/configuration/#tracing
 # 
@@ -299,3 +349,8 @@ common:
 # will report 503 Service Unavailable status via /ready endpoint.
 # CLI flag: -shutdown-delay
 # shutdown_delay: 1s
+
+# Namespace of the metrics that in previous releases had cortex as namespace.
+# This setting is deprecated and will be removed in the next minor release.
+# CLI flag: -metrics-namespace
+# metrics_namespace: "loki"

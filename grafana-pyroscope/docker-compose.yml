@@ -9,15 +9,15 @@ networks:
   bridge: { external: true, name: net }
 services:
   # --------------------------------------------------------------------------------------------------------------------
-  mimir-base:
+  pyroscope-base:
     profiles: [_]
-    container_name: mimir-base
-    image: grafana/mimir:latest
+    container_name: pyroscope-base
+    image: grafana/pyroscope:latest
     labels:
       kompose.service.type: nodeport
       kompose.volume.type: configMap
     networks: [bridge]
-    ports: ["3300","3301"]
+    ports: ["3400","3401"]
     secrets:
       - { source: s3host, target: /run/secrets/s3host/s3host }
       - { source: s3port, target: /run/secrets/s3port/s3port }
@@ -29,101 +29,95 @@ services:
     user: ${UID}:${GID}
     volumes:
       - ./docker-entry.sh:/entrypoint:ro
-      - ./etc.config.yml:/etc/config/mimir.yml:ro
+      - ./etc.config.yml:/etc/config/pyroscope.yml:ro
       - ./../.volume/data:/data
       - ./../.volume/tmp:/tmp
       - ./../.volume/log:/var/log
     environment:
       - TZ=Asia/Jakarta
   # --------------------------------------------------------------------------------------------------------------------
-  mimir-all:
+  pyroscope-all:
     profiles: [all]
-    container_name: mimir-all
-    extends: { service: mimir-base }
+    container_name: pyroscope-all
+    extends: { service: pyroscope-base }
     entrypoint: [/entrypoint, all]
     depends_on: []
   # --------------------------------------------------------------------------------------------------------------------
-  mimir-distributor:
+  pyroscope-distributor:
     profiles: [cluster]
-    container_name: mimir-distributor
-    extends: { service: mimir-base }
+    container_name: pyroscope-distributor
+    extends: { service: pyroscope-base }
+    ports: ["3400:3400"]
     entrypoint: [/entrypoint, distributor]
-    depends_on: [mimir-ingester-0, mimir-ingester-1, mimir-ingester-2]
+    depends_on: [pyroscope-ingester-0, pyroscope-ingester-1, pyroscope-ingester-2]
   # --------------------------------------------------------------------------------------------------------------------
-  mimir-ingester-0:
+  pyroscope-ingester-0:
     profiles: [cluster]
-    container_name: mimir-ingester-0
-    extends: { service: mimir-base }
+    container_name: pyroscope-ingester-0
+    extends: { service: pyroscope-base }
     entrypoint: [/entrypoint, ingester, "-0"]
     depends_on: []
   # --------------------------------------------------------------------------------------------------------------------
-  mimir-ingester-1:
+  pyroscope-ingester-1:
     profiles: [cluster]
-    container_name: mimir-ingester-1
-    extends: { service: mimir-base }
+    container_name: pyroscope-ingester-1
+    extends: { service: pyroscope-base }
     entrypoint: [/entrypoint, ingester, "-1"]
     depends_on: []
   # --------------------------------------------------------------------------------------------------------------------
-  mimir-ingester-2:
+  pyroscope-ingester-2:
     profiles: [cluster]
-    container_name: mimir-ingester-2
-    extends: { service: mimir-base }
+    container_name: pyroscope-ingester-2
+    extends: { service: pyroscope-base }
     entrypoint: [/entrypoint, ingester, "-2"]
     depends_on: []
   # --------------------------------------------------------------------------------------------------------------------
-  mimir-query-scheduler:
+  pyroscope-query-scheduler:
     profiles: [cluster]
-    container_name: mimir-query-scheduler
-    extends: { service: mimir-base }
+    container_name: pyroscope-query-scheduler
+    extends: { service: pyroscope-base }
     entrypoint: [/entrypoint, query-scheduler]
     depends_on: []
   # --------------------------------------------------------------------------------------------------------------------
-  mimir-query-frontend:
+  pyroscope-query-frontend:
     profiles: [cluster]
-    container_name: mimir-query-frontend
-    extends: { service: mimir-base }
+    container_name: pyroscope-query-frontend
+    extends: { service: pyroscope-base }
     entrypoint: [/entrypoint, query-frontend]
     depends_on: []
   # --------------------------------------------------------------------------------------------------------------------
-  mimir-querier-0:
+  pyroscope-querier-0:
     profiles: [cluster]
-    container_name: mimir-querier-0
-    extends: { service: mimir-base }
+    container_name: pyroscope-querier-0
+    extends: { service: pyroscope-base }
     entrypoint: [/entrypoint, querier, "-0"]
-    depends_on: [mimir-query-frontend]
+    depends_on: [pyroscope-query-frontend]
   # --------------------------------------------------------------------------------------------------------------------
-  mimir-querier-1:
+  pyroscope-querier-1:
     profiles: [cluster]
-    container_name: mimir-querier-1
-    extends: { service: mimir-base }
+    container_name: pyroscope-querier-1
+    extends: { service: pyroscope-base }
     entrypoint: [/entrypoint, querier, "-1"]
-    depends_on: [mimir-query-frontend]
+    depends_on: [pyroscope-query-frontend]
   # --------------------------------------------------------------------------------------------------------------------
-  mimir-querier-2:
+  pyroscope-querier-2:
     profiles: [cluster]
-    container_name: mimir-querier-2
-    extends: { service: mimir-base }
+    container_name: pyroscope-querier-2
+    extends: { service: pyroscope-base }
     entrypoint: [/entrypoint, querier, "-2"]
-    depends_on: [mimir-query-frontend]
+    depends_on: [pyroscope-query-frontend]
   # --------------------------------------------------------------------------------------------------------------------
-  mimir-ruler:
+  pyroscope-compactor:
     profiles: [cluster]
-    container_name: mimir-ruler
-    extends: { service: mimir-base }
-    entrypoint: [/entrypoint, ruler]
-    depends_on: [mimir-ingester-0]
-  # --------------------------------------------------------------------------------------------------------------------
-  mimir-compactor:
-    profiles: [cluster]
-    container_name: mimir-compactor
-    extends: { service: mimir-base }
+    container_name: pyroscope-compactor
+    extends: { service: pyroscope-base }
     entrypoint: [/entrypoint, compactor]
-    depends_on: [mimir-ingester-0]
+    depends_on: [pyroscope-ingester-0]
   # --------------------------------------------------------------------------------------------------------------------
-  mimir-store-gateway:
+  pyroscope-store-gateway:
     profiles: [cluster]
-    container_name: mimir-store-gateway
-    extends: { service: mimir-base }
+    container_name: pyroscope-store-gateway
+    extends: { service: pyroscope-base }
     entrypoint: [/entrypoint, store-gateway]
-    depends_on: [mimir-ingester-0]
+    depends_on: [pyroscope-ingester-0]
   # --------------------------------------------------------------------------------------------------------------------

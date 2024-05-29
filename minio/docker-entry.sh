@@ -33,6 +33,13 @@ bg() {
     mc admin user add ${ALIAS} "${ACCESS}" "${SECRET}"           > /dev/null;
     mc admin policy attach ${ALIAS} readwrite --user "${ACCESS}" > /dev/null;
 
+    local BUCKET=$(cat /run/secrets/pyroscope-bucket/pyroscope-bucket)
+    local ACCESS=$(cat /run/secrets/pyroscope-access/pyroscope-access)
+    local SECRET=$(cat /run/secrets/pyroscope-secret/pyroscope-secret)
+    mc mb "${ALIAS}/${BUCKET}"                                   > /dev/null;
+    mc admin user add ${ALIAS} "${ACCESS}" "${SECRET}"           > /dev/null;
+    mc admin policy attach ${ALIAS} readwrite --user "${ACCESS}" > /dev/null;
+
     mc admin prometheus generate ${ALIAS};
 }; bg &
 # ----------------------------------------------------------------------------------------------------------------------

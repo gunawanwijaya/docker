@@ -38,6 +38,16 @@ datasources:
       secureJsonData: {},
     },
     {
+      uid: lgtm-pyroscope-cluster,
+      name: lgtm-pyroscope-cluster,
+      type: grafana-pyroscope-datasource,
+      url: http://pyroscope-query-frontend:3400,
+      isDefault: false,
+      editable: true,
+      jsonData: {},
+      secureJsonData: {},
+    },
+    {
       uid: postgresql,
       name: postgresql,
       type: grafana-postgresql-datasource,

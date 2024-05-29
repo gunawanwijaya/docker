@@ -10,6 +10,7 @@ networks:
 services:
   # --------------------------------------------------------------------------------------------------------------------
   loki-base:
+    profiles: [_]
     container_name: loki-base
     image: grafana/loki:latest
     labels:
